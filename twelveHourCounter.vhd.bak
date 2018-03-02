@@ -1,0 +1,184 @@
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.std_logic_unsigned.all;
+
+entity timecounter IS
+	port(
+	KEY3_RST, CLK, KEY0_S, KEY1_M, KEY2_H :IN STD_LOGIC;
+	sl_in	: IN STD_LOGIC_VECTOR(3 downto 0);
+	sm_in : IN STD_LOGIC_VECTOR(3 downto 0);
+	ml_in	: IN STD_LOGIC_VECTOR(3 downto 0);
+	mm_in : IN STD_LOGIC_VECTOR(3 downto 0);
+	hl_in	: IN STD_LOGIC_VECTOR(3 downto 0);
+	hm_in : IN STD_LOGIC_VECTOR(3 downto 0);
+	
+	s_lsd	:OUT STD_LOGIC_VECTOR(0 to 6);
+	s_msd	:OUT STD_LOGIC_VECTOR(0 to 6);
+	m_lsd	:OUT STD_LOGIC_VECTOR(0 to 6);
+	m_msd	:OUT STD_LOGIC_VECTOR(0 to 6);
+	h_lsd	:OUT STD_LOGIC_VECTOR(0 to 6);
+	h_msd	:OUT STD_LOGIC_VECTOR(0 to 6)
+	)
+END timecounter;
+	
+architecture counting of timecounter is
+
+	SIGNAL slsd7 :STD_LOGIC_VECTORS(0 to 6) := "0000001";
+	SIGNAL smsd7 :STD_LOGIC_VECTORS(0 to 6) := "0000001";
+	SIGNAL mlsd7 :STD_LOGIC_VECTORS(0 to 6) := "0000001";
+	SIGNAL mmsd7 :STD_LOGIC_VECTORS(0 to 6) := "0000001";
+	SIGNAL hlsd7 :STD_LOGIC_VECTORS(0 to 6) := "1001111";
+	SIGNAL hmsd7 :STD_LOGIC_VECTORS(0 to 6) := "0000001";
+	
+	SIGNAL dig1, dig2, dig3, dig4, dig5, dig6 : STD_LOGIC_VECTORS(3 downto 0);
+	
+BEGIN
+	
+	s_lsd <= slsd7;
+	s_msd <= smsd7;
+	m_lsd <= mlsd7;
+	m_msd <= mmsd7;
+	h_lsd <= hlsd7;
+	h_msd <= hmsd7;
+	
+	
+	PROCESS(CLK, KEY3_RST, KEY0_S, KEY1_M, KEY2_H)
+	BEGIN
+		if(KEY3_RST ='0') then
+				dig1 = "0000";
+				dig2 = "0000";
+				dig3 = "0000";
+				dig4 = "0000";
+				dig5 = "0001";
+				dig6 = "0000";
+		elsif (KEY0_S = '1') then 
+			dig1 <= sl_in;
+			dig2 <= sm_in;
+		elsif (KEY1_M = '1') then 
+			dig3 <= ml_in;
+			dig4 <= mm_in;
+		elsif (KEY2_H = '1') then 
+			dig5 <= hl_in;
+			dig6 <= hm_in;
+		elsif(CLK'event and CLK='1') then
+			if(dig1 =9) then 
+				dig1 <= "0000";
+				if(dig2 =5) then
+					dig2 <= "0000";
+					if (dig3 = 9) then
+						dig3 <= "0000";
+						if (dig4 = 5) then 
+							dig4 <= "0000";
+							if(dig5 = 2 and dig6 = 1) then
+								dig6 <= "0000";
+								dig5 <= "0001";
+							elsif (dig5=9 and dig6=0) then
+								dig6 <= "0001";
+								dig5 <= "0000";
+							else dig5 <= dig5 + 1;
+							end if;
+						else dig4 <= dig4 + 1;
+						end if;
+					else dig3 <= dig3 + 1;
+					end if;
+				else dig2 <= dig2 + 1;
+				end if;
+			else dig1 <= dig1 + 1;
+			end if;
+		end if;
+	END PROCESS;
+	
+	PROCESS(dig1, dig2, dig3, dig4, dig5, dig6)
+	BEGIN
+		
+		case dig1 is 
+			when "0000" => s_lsd <="0000001";
+			when "0001" => s_lsd <="1001111";
+			when "0010" => s_lsd <="0010010";
+			when "0011" => s_lsd <="0000110";
+			when "0100" => s_lsd <="1001100";
+			when "0101" => s_lsd <="0100100";
+			when "0110" => s_lsd <="0100000";
+			when "0111" => s_lsd <="0001111";
+			when "1000" => s_lsd <="0000000";
+			when "1001" => s_lsd <="0000100";
+			when others => s_lsd <="1111111";
+		end case;
+		
+		case dig2 is 
+			when "0000" => s_msd <="0000001";
+			when "0001" => s_msd <="1001111";
+			when "0010" => s_msd <="0010010";
+			when "0011" => s_msd <="0000110";
+			when "0100" => s_msd <="1001100";
+			when "0101" => s_msd <="0100100";
+			when "0110" => s_msd <="0100000";
+			when "0111" => s_msd <="0001111";
+			when "1000" => s_msd <="0000000";
+			when "1001" => s_msd <="0000100";
+			when others => s_msd <="1111111";
+		end case;
+		
+		case dig3 is 
+			when "0000" => m_lsd <="0000001";
+			when "0001" => m_lsd <="1001111";
+			when "0010" => m_lsd <="0010010";
+			when "0011" => m_lsd <="0000110";
+			when "0100" => m_lsd <="1001100";
+			when "0101" => m_lsd <="0100100";
+			when "0110" => m_lsd <="0100000";
+			when "0111" => m_lsd <="0001111";
+			when "1000" => m_lsd <="0000000";
+			when "1001" => m_lsd <="0000100";
+			when others => m_lsd <="1111111";
+		end case;
+		
+		case dig4 is 
+			when "0000" => m_msd <="0000001";
+			when "0001" => m_msd <="1001111";
+			when "0010" => m_msd <="0010010";
+			when "0011" => m_msd <="0000110";
+			when "0100" => m_msd <="1001100";
+			when "0101" => m_msd <="0100100";
+			when "0110" => m_msd <="0100000";
+			when "0111" => m_msd <="0001111";
+			when "1000" => m_msd <="0000000";
+			when "1001" => m_msd <="0000100";
+			when others => m_msd <="1111111";
+		end case;
+		
+		case dig5 is 
+			when "0000" => h_lsd <="0000001";
+			when "0001" => h_lsd <="1001111";
+			when "0010" => h_lsd <="0010010";
+			when "0011" => h_lsd <="0000110";
+			when "0100" => h_lsd <="1001100";
+			when "0101" => h_lsd <="0100100";
+			when "0110" => h_lsd <="0100000";
+			when "0111" => h_lsd <="0001111";
+			when "1000" => h_lsd <="0000000";
+			when "1001" => h_lsd <="0000100";
+			when others => h_lsd <="1111111";
+		end case;
+		
+		case dig6 is 
+			when "0000" => h_msd <="0000001";
+			when "0001" => h_msd <="1001111";
+			when "0010" => h_msd <="0010010";
+			when "0011" => h_msd <="0000110";
+			when "0100" => h_msd <="1001100";
+			when "0101" => h_msd <="0100100";
+			when "0110" => h_msd <="0100000";
+			when "0111" => h_msd <="0001111";
+			when "1000" => h_msd <="0000000";
+			when "1001" => h_msd <="0000100";
+			when others => h_msd <="1111111";
+		end case;
+		
+	END PROCESS;
+	
+end counting;
+		
+			
+		
+
